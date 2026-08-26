@@ -106,6 +106,11 @@ This repo exists because of a few beliefs:
 
 Created by [@lizliz404](https://x.com/lizliz404).
 
+## Related
+
+- Asset pack (soft route): [lizliz404/design-templates](https://github.com/lizliz404/design-templates) · map `templates/sibling-routes.md`
+- Landing replication loads pack orbs/shaders/Beautiful UI when `WEBGL_THEATER` or agent chrome is the mechanism — it does not vendor those folders.
+
 ## License
 
 MIT — Use it, modify it, share it.

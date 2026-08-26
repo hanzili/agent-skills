@@ -11,6 +11,7 @@ entrypoint: SKILL.md
 estimated_context_tokens: ~2800
 phases: [capture, signal-sheet, skeleton, density, micro-parity, behavior, polish]
 version: 5.0.0
+disable-model-invocation: true
 ---
 
 # Landing Page Replication (v5)
@@ -26,6 +27,23 @@ those gates real. Detail: `references/v5-build-log.md`.
 
 **Worked example (haoqi):** Hero IMR Δ **3%** (pass) + SLR **0.52** → **FAIL**
 (`--scroll-length`). Fix tunnel height before ±2px chase. Gallery **J**.
+
+## 0. Sibling assets (design-templates)
+
+This skill is the **measurement pipeline**. Visual leftovers live in
+[lizliz404/design-templates](https://github.com/lizliz404/design-templates)
+(local: `D:\dev\repos\design-templates`). Map: `templates/sibling-routes.md`.
+
+| Need after capture tagged `WEBGL_THEATER` / agent chrome | Load |
+|---|---|
+| Paper / mesh atmosphere (not a status orb) | `templates/paper-shaders/SKILL.md` |
+| One thinking / glass orb | `templates/ui-patterns/thinking-orb/SKILL.md` (MIT wgsl+metal already grabbed) |
+| Agent thinking / stream / approval / dense tables | `templates/design/beautiful-ui-ai-interfaces/` |
+| Full-bleed Three.js that **blends into** the page | sibling skill `webgl-threejs-background-animation` in this repo |
+| One Community 3D **product** hero | `templates/ui-patterns/threeui-hero-adapter.md` — not a diagram |
+
+Do not invent replica-only shaders when a pack adapter already covers the mechanism.
+Do not skip Loop 5 because the pack recipe “looks right.”
 
 ## 1. Risk posture + legal
 

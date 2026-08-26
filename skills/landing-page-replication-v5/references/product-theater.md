@@ -31,6 +31,7 @@ When `runtime.json.flags.WEBGL_THEATER`:
 | Strategy | When | Pass criterion |
 |----------|------|----------------|
 | Real WebGL / Three.js | Study clone, agent can ship shaders | `canvasCount ≥ 1` + pointer/scroll linkage |
+| Pack stand-in: thinking orb / Paper mesh | Target is a status sphere or paper atmosphere, not a proprietary mesh | Load design-templates `thinking-orb` or `paper-shaders`; still prove pointer/scroll if the target had them |
 | CSS/SVG stand-in | Legal/time constraint; no proprietary meshes | Pointer move changes scene (`--rx/--ry`, refraction vars, or measurable style delta) |
 | Explicit defer | P0/P1 in GAPS with date/owner | Documented; Behavior gate waived with criterion |
 
