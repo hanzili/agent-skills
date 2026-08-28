@@ -8,6 +8,7 @@ metadata:
   hermes:
     tags: [jobs, internships, amap, liepin, mcp, geolocation, job-hunt, watch, apply]
     related_skills: [native-mcp]
+disable-model-invocation: true
 ---
 
 # 地理围栏找工作 v5 (Geo Job Hunt)

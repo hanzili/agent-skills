@@ -4,6 +4,7 @@ description: 交互式项目流 / logo stream / 无限横向内容流 / hover·�
 metadata:
   hermes:
     category: creative
+disable-model-invocation: true
 ---
 
 # Interactive Projects Stream

@@ -4,6 +4,7 @@ description: 用 Three.js 做融入页面背景的 WebGL 3D 动画与游戏内�
 metadata:
   hermes:
     category: creative
+disable-model-invocation: true
 ---
 
 # WebGL Three.js Background Animation & Motion Craft

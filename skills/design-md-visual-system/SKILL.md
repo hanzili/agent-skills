@@ -24,6 +24,7 @@ metadata:
       - design-brief-authoring
       - design-brief-for-image-gen
       - creative-artifact-production
+disable-model-invocation: true
 ---
 
 # DESIGN.md Visual System (implementation-grade)

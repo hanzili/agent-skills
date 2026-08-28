@@ -6,6 +6,7 @@ description: >
   links, analytics, SERP, and tracking workflows. Use when a user requests an
   SEO/GEO audit, AI citation or brand-mention analysis, search remediation,
   content optimization, or a prioritized organic-discovery plan.
+disable-model-invocation: true
 ---
 
 # seo-master

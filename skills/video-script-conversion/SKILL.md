@@ -6,6 +6,7 @@ metadata:
   hermes:
     tags: [writing, video-script, short-video, hook, liz-voice, chinese]
     related_skills: [liz-writes, writing-pipeline, dbs-content]
+disable-model-invocation: true
 ---
 
 # video-script-conversion
