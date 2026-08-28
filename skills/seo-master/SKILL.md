@@ -164,6 +164,26 @@ Use statuses, not a pseudo-scientific score:
 
 Optimize the page for one primary intent and the jobs needed to satisfy it.
 
+### Format-vs-intent gate (first filter)
+
+Classify primary intent, then reject format mismatch before copy polish.
+
+| Intent | Fit format | Reject |
+|---|---|---|
+| Explore / shortlist | Listicle, category roundup | Decision page forced into “N alternatives” |
+| Decide / choose (X vs Y, alt to X) | Comparison or alternative page | Listicle that never answers “which should I pick” |
+| Learn / how-to | Explainer, procedure | Comparison shell with no decision criteria |
+
+Decision-intent pages fail this gate if they are listicles. Fix format first.
+
+### Comparison/alternative page skeleton
+
+- [ ] H1 states the decision question (e.g. `How is X better than Y?`)
+- [ ] Above-the-fold: direct answer + proof hooks
+- [ ] Real-data band (benchmarks, pricing, limits — sourced)
+- [ ] Evidence-dense differentiators; product video/screenshots where claims need demo
+- [ ] Fair criteria table; disclose conflicts
+
 1. Match title, visible heading, opening, sections, media, and CTA to intent.
 2. Make titles and descriptions specific and nonduplicative; judge truncation
    from rendered SERPs when available, not a fixed character quota.
@@ -617,6 +637,14 @@ Capture exact query, locale, device, date/time, personalization state, and sourc
 - Identify answer/source gaps the site can satisfy honestly.
 - Re-check volatile SERPs; one observation is not a stable market fact.
 
+### Comparison/alternative parity floor
+
+`【Proposal】` Before publishing a comparison or alternative page, open the
+competitor's same-type URL in Ahrefs/Semrush (or authorized equivalent). Require
+parity or better on: traffic estimate, keyword coverage, content depth, evidence
+density. Else `BLOCK` publish. Qualitative SERP notes without this floor check
+are incomplete.
+
 Output an opportunity table with query cluster, observed surface, winning source,
 why it may satisfy the task, evidence gap, feasible asset, impact, effort, and
 confidence.
@@ -631,6 +659,12 @@ confidence.
   changes, and known outages.
 - Segment branded/unbranded, intent, market, template, and conversion value.
 - Keep raw observations so metric definitions can be recomputed.
+
+### Page-level result ownership
+
+Assign one owner per priority URL. Success = that URL's GSC impressions + CTR
+(and mapped conversions when available), not “we shipped SEO.” Unowned URLs stay
+`UNVERIFIED` for outcome claims.
 
 ### Decision rules
 
@@ -819,6 +853,9 @@ V6 additions:
 | Cherry-pick one favorable AI answer | Report all valid fixed-protocol runs |
 | Merge platform rates without denominators | Report platform/surface metrics separately |
 | Claim causality from before/after | Control protocol and state confounders/limits |
+| Ship decision page as listicle | Pass format-vs-intent gate; rewrite as comparison/alternative |
+| Publish below competitor same-type parity | Meet Ahrefs/Semrush parity floor first |
+| Report “did SEO” without URL owner/metrics | Assign page owner; track GSC impressions + CTR per URL |
 
 ## 18. Source synthesis and claim policy
 
