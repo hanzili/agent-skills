@@ -8,6 +8,7 @@ metadata:
   hermes:
     tags: [tts, asr, podcast, doubao, volcengine, audio, speech, lizliz]
     related_skills: [elevenlabs-tts]
+disable-model-invocation: true
 ---
 
 # Doubao TTS (TTS + Podcast + ASR)
@@ -62,17 +63,24 @@ Existing bundled scripts (`tts-generate.py`, `podcast-generate.py`, `asr-transcr
 
 Secrets stay out of this file. Record variable names and paths only.
 
-Canonical secrets + symlinks:
+Canonical secrets + lookup order (first hit wins):
 
 ```text
-/home/ubuntu/.hermes/secrets/doubao-tts.env
-/home/ubuntu/.hermes/secrets/elevenlabs.env
-/home/ubuntu/.hermes/profiles/writing/.env.d/*.env -> /home/ubuntu/.hermes/secrets/*.env
-/home/ubuntu/.hermes/profiles/trading/.env.d/*.env -> /home/ubuntu/.hermes/secrets/*.env
-/home/ubuntu/.hermes/.env.d/*.env -> /home/ubuntu/.hermes/secrets/*.env
+# Windows / multi-agent hub (preferred on this machine)
+%USERPROFILE%\.agents\secrets\doubao-tts.env
+%USERPROFILE%\.agents\secrets\elevenlabs.env
+
+# Hermes writing-profile path (Linux / Hermes agents; keep as mirror)
+~/.hermes/secrets/doubao-tts.env
+~/.hermes/secrets/elevenlabs.env
+~/.hermes/profiles/writing/.env.d/*.env -> ~/.hermes/secrets/*.env
+~/.hermes/profiles/trading/.env.d/*.env -> ~/.hermes/secrets/*.env
+~/.hermes/.env.d/*.env -> ~/.hermes/secrets/*.env
 ```
 
-Also mirror into profile `.env` when convenient (older scripts only source `.env`). New scripts should load `.env` and `.env.d/*.env`.
+**Best practice:** put the real secret once under `~/.agents/secrets/` so Cursor / Claude / Codex / other agents sharing `~/.agents/skills` can all find it; mirror the same file to `~/.hermes/secrets/` if Hermes scripts still hard-code that path. Do not commit secrets into the skill folder.
+
+Also mirror into profile `.env` when convenient (older scripts only source `.env`). New scripts should load `.env` and `.env.d/*.env`, and should also try `~/.agents/secrets/*.env` before failing.
 
 Writing-profile home: `/home/ubuntu/.hermes/profiles/writing/.env`
 
