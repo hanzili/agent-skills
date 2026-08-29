@@ -120,7 +120,14 @@ def capture_with_playwright(url: str) -> dict:
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 900})
-        page.goto(url, wait_until="networkidle", timeout=90000)
+        try:
+            page.goto(url, wait_until="networkidle", timeout=45000)
+        except Exception:
+            # networkidle never settles on pages with persistent connections
+            # (analytics beacons, websockets) — base44.com case 2026-08-29.
+            # Fall back to domcontentloaded + fixed settle.
+            page.goto(url, wait_until="domcontentloaded", timeout=45000)
+            page.wait_for_timeout(10000)
         page.wait_for_timeout(1200)
         data = page.evaluate(RUNTIME_JS)
         # sample a few scroll positions for mid-page state hints

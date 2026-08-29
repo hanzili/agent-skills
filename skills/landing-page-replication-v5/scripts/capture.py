@@ -140,9 +140,20 @@ def fingerprint(html: str, headers: str) -> dict:
         "framer": bool(re.search(r"framer|data-framer", blob, re.I)),
         "webflow": "webflow" in low,
         "vite_spa": bool(re.search(r"""id=["'](?:root|app)["']""", html, re.I)),
+        # Structural bot-wall markers only (cf-mitigated header, challenge-shell
+        # script/title, Datadome endpoint). Do NOT bare-word-match "challenge" in
+        # body copy: bolt.new and replit.com marketing pages contain the word and
+        # produced false positives on real HTTP 200 pages (2026-08-29 wave).
         "challenge": bool(
             re.search(
-                r"challenge|turnstile|cf-browser-verification|attention required",
+                r"cf-mitigated:"
+                r"|window\._cf_chl_opt"
+                r"|cdn-cgi/challenge-platform"
+                r"|cf-browser-verification"
+                r"|challenges\.cloudflare\.com"
+                r"|just a moment\.\.\."
+                r"|attention required!"
+                r"|geo\.datadome\.co",
                 low,
             )
         ),
@@ -157,8 +168,9 @@ def needs_playwright(fp: dict, engine: str) -> bool:
         return True
     if engine == "curl":
         return False
-    if fp.get("challenge"):
-        return False
+    # Note: challenge fingerprint is handled in main() (403/503 hard-routes to
+    # manual-devtools; a 200 with real content should still get the Playwright
+    # runtime/screenshot pass — bolt.new/replit.com false positives, 2026-08-29).
     if fp.get("framer") or fp.get("vite_spa"):
         return True
     if fp.get("nextjs") and not fp.get("has_h1"):
@@ -184,7 +196,14 @@ def playwright_capture(url: str, out: Path, shots: bool) -> int:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page(viewport={"width": 1440, "height": 900})
-            page.goto(url, wait_until="networkidle", timeout=90000)
+            try:
+                page.goto(url, wait_until="networkidle", timeout=45000)
+            except Exception:
+                # networkidle never settles on pages with persistent connections
+                # (analytics beacons, websockets) — base44.com case 2026-08-29.
+                # Fall back to domcontentloaded + fixed settle.
+                page.goto(url, wait_until="domcontentloaded", timeout=45000)
+                page.wait_for_timeout(10000)
             page.wait_for_timeout(1500)
             (out / "dom.html").write_text(
                 page.evaluate("() => document.documentElement.outerHTML")
@@ -274,13 +293,39 @@ def main() -> int:
     route = "curl"
     note = ""
 
-    if status in (403, 503) or fp.get("challenge"):
+    if status in (403, 503) and fp.get("challenge"):
         route = "manual-devtools"
         note = (
-            "Bot management suspected. curl/Playwright may both fail. "
-            "Use browser DevTools → Network+Elements; see references/capture-router.md."
+            "Bot wall confirmed (403/503 + structural challenge fingerprint). "
+            "Preferred retry: headed persistent-profile session via Playwright MCP "
+            "(cleared lovable.dev managed challenge 2026-08-29); manual DevTools "
+            "is the last resort. See references/capture-router.md."
         )
         print(f"ROUTE: {route}\n{note}", file=sys.stderr)
+    elif fp.get("challenge"):
+        # Challenge-shaped content on a 200: route on content, not on the word.
+        # Real content (has_h1) → run the Playwright pass (screenshots + runtime);
+        # shell-like body → treat as a soft interstitial, escalate.
+        if args.engine == "playwright" or fp.get("has_h1"):
+            print(
+                "NOTE: challenge-shaped fingerprint on HTTP 200 but real content "
+                "present — continuing with Playwright pass.",
+                file=sys.stderr,
+            )
+            route = "playwright"
+            print(f"ROUTE: {route} (fingerprint={fp})", file=sys.stderr)
+            code = playwright_capture(args.url, args.out, shots=not args.no_shots)
+            if code != 0:
+                note = "Playwright failed — fall back to manual DevTools."
+                route = "manual-devtools"
+        else:
+            route = "manual-devtools"
+            note = (
+                "HTTP 200 but body looks like a challenge shell (no real headings). "
+                "Retry via headed persistent-profile session (Playwright MCP) or "
+                "manual DevTools; see references/capture-router.md."
+            )
+            print(f"ROUTE: {route}\n{note}", file=sys.stderr)
     elif needs_playwright(fp, args.engine):
         route = "playwright"
         print(f"ROUTE: {route} (fingerprint={fp})", file=sys.stderr)
