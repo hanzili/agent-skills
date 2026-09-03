@@ -1,8 +1,18 @@
 # Agent Skills
 
-Downloadable, unzip-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Nine packs, each with its own ready-to-download zip. No installers, no frameworks, no signup.
+Clone-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Ten packs in `skills/`, each just a folder. No installers, no frameworks, no signup.
 
-Also published on **[lizliz.xyz/skills](https://lizliz.xyz/skills)** — same packs, same zips.
+Also published on **[lizliz.xyz/skills](https://lizliz.xyz/skills)** — same packs, browsable online.
+
+```mermaid
+graph TD
+    README["README.md — you are here"] --> SKILLS["skills/ · ten packs<br/>each: SKILL.md + scripts/ + references/ (+ evals/)"]
+    SKILLS --> VOICE["Voice & content<br/>doubao-tts · video-script-conversion"]
+    SKILLS --> VISUAL["Replication & visual<br/>landing-page-replication-v5 · webgl-threejs-background-animation<br/>interactive-projects-stream · design-md-visual-system"]
+    SKILLS --> TOOLS["Data & tooling<br/>geo-job-hunt · seo-master · clerk-auth · feedback-pipeline"]
+    SKILLS -.-> SITE["lizliz.xyz/skills"]
+    SKILLS -.->|"soft route"| DT["design-templates asset pack"]
+```
 
 ## What This Does
 
@@ -24,19 +34,20 @@ These nine packs come from real pipelines on lizliz.xyz: they were built to get 
   <img src="https://lizliz.xyz/assets/icons/skills/feedback-pipeline.svg" width="48" alt="Feedback Pipeline" />
 </p>
 
-- **Doubao TTS** — Turn articles into spoken audio, dual-speaker podcasts, and ASR transcripts via Volcengine 豆包语音 · [doubao-tts.zip](skills/doubao-tts/doubao-tts.zip)
-- **Geo Job Hunt** — Find jobs inside a map radius — Amap fence + Liepin hiring, batch apply with rate-limit guardrails · [geo-job-hunt.zip](skills/geo-job-hunt/geo-job-hunt.zip)
-- **Landing Replication v5** — Copy a marketing landing page with measurable gates: capture, density, micro-parity, offline behavior probes · [landing-page-replication-v5.zip](skills/landing-page-replication-v5/landing-page-replication-v5.zip)
-- **Video Script Conversion** — Rebuild, refine, and audit spoken-voice scripts from articles — five seconds decide if viewers stay · [video-script-conversion.zip](skills/video-script-conversion/video-script-conversion.zip)
-- **DESIGN.md Visual System** — Write implementation-grade DESIGN.md — YAML tokens plus the judgment prose agents need to ship UI without inventing taste · [design-md-visual-system.zip](skills/design-md-visual-system/design-md-visual-system.zip)
-- **WebGL Three.js Background Animation** — WebGL that blends into the page — config-driven, GPU-budgeted, full lifecycle hygiene · [webgl-threejs-background-animation.zip](skills/webgl-threejs-background-animation/webgl-threejs-background-animation.zip)
-- **Interactive Projects Stream** — Continuous clickable content stream — lane-track transport, accordion-style skill popups, D/H/P previews, zero deps · [interactive-projects-stream.zip](skills/interactive-projects-stream/interactive-projects-stream.zip)
-- **SEO Master** — Full-site SEO/GEO audit plus generative-engine citation measurement — evidence ladder, not vibes · [seo-master.zip](skills/seo-master/seo-master.zip)
-- **Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [feedback-pipeline.zip](skills/feedback-pipeline/feedback-pipeline.zip)
+- **Doubao TTS** — Turn articles into spoken audio, dual-speaker podcasts, and ASR transcripts via Volcengine 豆包语音 · [doubao-tts/](skills/doubao-tts/)
+- **Geo Job Hunt** — Find jobs inside a map radius — Amap fence + Liepin hiring, batch apply with rate-limit guardrails · [geo-job-hunt/](skills/geo-job-hunt/)
+- **Landing Replication v5** — Copy a marketing landing page with measurable gates: capture, density, micro-parity, offline behavior probes · [landing-page-replication-v5/](skills/landing-page-replication-v5/)
+- **Video Script Conversion** — Rebuild, refine, and audit spoken-voice scripts from articles — five seconds decide if viewers stay · [video-script-conversion/](skills/video-script-conversion/)
+- **DESIGN.md Visual System** — Write implementation-grade DESIGN.md — YAML tokens plus the judgment prose agents need to ship UI without inventing taste · [design-md-visual-system/](skills/design-md-visual-system/)
+- **WebGL Three.js Background Animation** — WebGL that blends into the page — config-driven, GPU-budgeted, full lifecycle hygiene · [webgl-threejs-background-animation/](skills/webgl-threejs-background-animation/)
+- **Interactive Projects Stream** — Continuous clickable content stream — lane-track transport, accordion-style skill popups, D/H/P previews, zero deps · [interactive-projects-stream/](skills/interactive-projects-stream/)
+- **SEO Master** — Full-site SEO/GEO audit plus generative-engine citation measurement — evidence ladder, not vibes · [seo-master/](skills/seo-master/)
+- **Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [feedback-pipeline/](skills/feedback-pipeline/)
+- **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
 
 ## Key Features
 
-- **Unzip and use** — A pack is a folder: drop it into your agent's skills directory, done. No npm, no build step, no config.
+- **Clone and use** — A pack is a folder: copy it into your agent's skills directory, done. No npm, no build step, no config.
 - **Agent-agnostic** — Any coding agent that reads `SKILL.md` can follow the workflow; scripts are stdlib-only Python where possible.
 - **Measurable, not vibes** — Every pack ships machine gates: probes, checks, character counters, eval scripts. You can verify the work instead of trusting it.
 - **Production-tested** — These are the actual packs running lizliz.xyz pipelines, not toy examples.
@@ -47,12 +58,13 @@ These nine packs come from real pipelines on lizliz.xyz: they were built to get 
 Pick one pack, or grab everything:
 
 ```bash
-# One pack (from the site or this repo)
-unzip skills/doubao-tts/doubao-tts.zip -d ~/.claude/skills/
-
 # Everything at once
 git clone https://github.com/lizliz404/agent-skills.git
 # ...then copy the pack folders you want into your agent's skills directory
+
+# Or cherry-pick one pack straight into place
+git clone --depth 1 https://github.com/lizliz404/agent-skills.git
+cp -r agent-skills/skills/doubao-tts ~/.claude/skills/
 ```
 
 Where "your agent's skills directory" lives:
@@ -100,7 +112,7 @@ This repo exists because of a few beliefs:
 1. **The fastest way to learn a process is to watch someone who already runs it.** These skills are that, packaged.
 2. **Dependencies are debt.** A stdlib-only Python script will work in ten years. A pinned framework will not.
 3. **Vibes are not verification.** Every pack has numbers you can check: density scores, character counts, probe results.
-4. **Unzip and use is the whole point.** If a skill needs a ceremony to install, it is not a skill, it is a project.
+4. **Clone and use is the whole point.** If a skill needs a ceremony to install, it is not a skill, it is a project.
 
 ## Credits
 
