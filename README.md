@@ -1,15 +1,16 @@
 # Agent Skills
 
-Clone-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Ten packs in `skills/`, each just a folder. No installers, no frameworks, no signup.
+Clone-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Eleven packs in `skills/`, each just a folder. No installers, no frameworks, no signup.
 
 Also published on **[lizliz.xyz/skills](https://lizliz.xyz/skills)** — same packs, browsable online.
 
 ```mermaid
 graph TD
-    README["README.md — you are here"] --> SKILLS["skills/ · ten packs<br/>each: SKILL.md + scripts/ + references/ (+ evals/)"]
+    README["README.md — you are here"] --> SKILLS["skills/ · eleven packs<br/>each: SKILL.md + scripts/ + references/ (+ evals/)"]
     SKILLS --> VOICE["Voice & content<br/>doubao-tts · video-script-conversion"]
     SKILLS --> VISUAL["Replication & visual<br/>landing-page-replication-v5 · webgl-threejs-background-animation<br/>interactive-projects-stream · design-md-visual-system"]
     SKILLS --> TOOLS["Data & tooling<br/>geo-job-hunt · seo-master · clerk-auth · feedback-pipeline"]
+    SKILLS --> NET["Network / infra<br/>ai-native-mihomo"]
     SKILLS -.-> SITE["lizliz.xyz/skills"]
     SKILLS -.->|"soft route"| DT["design-templates asset pack"]
 ```
@@ -44,6 +45,7 @@ These nine packs come from real pipelines on lizliz.xyz: they were built to get 
 - **SEO Master** — Full-site SEO/GEO audit plus generative-engine citation measurement — evidence ladder, not vibes · [seo-master/](skills/seo-master/)
 - **Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [feedback-pipeline/](skills/feedback-pipeline/)
 - **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
+- **AI-Native Mihomo** — Headless mihomo (Clash Meta) core + REST API as the agent control surface — self-heal, proxy doctrine, TUN debug playbook, runbook · [ai-native-mihomo/](skills/ai-native-mihomo/)
 
 ## Key Features
 
