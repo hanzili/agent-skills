@@ -1,16 +1,16 @@
 # Agent Skills
 
-Clone-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Eleven packs in `skills/`, each just a folder. No installers, no frameworks, no signup.
+Clone-and-use skill packs for AI coding assistants — Claude Code, Cursor, Codex, Hermes, or any agent that reads a `SKILL.md`. Twelve packs in `skills/`, each just a folder. No installers, no frameworks, no signup.
 
 Also published on **[lizliz.xyz/skills](https://lizliz.xyz/skills)** — same packs, browsable online.
 
 ```mermaid
 graph TD
-    README["README.md — you are here"] --> SKILLS["skills/ · eleven packs<br/>each: SKILL.md + scripts/ + references/ (+ evals/)"]
+    README["README.md — you are here"] --> SKILLS["skills/ · twelve packs<br/>each: SKILL.md + scripts/ + references/ (+ evals/)"]
     SKILLS --> VOICE["Voice & content<br/>doubao-tts · video-script-conversion"]
     SKILLS --> VISUAL["Replication & visual<br/>landing-page-replication-v5 · webgl-threejs-background-animation<br/>interactive-projects-stream · design-md-visual-system"]
     SKILLS --> TOOLS["Data & tooling<br/>geo-job-hunt · seo-master · clerk-auth · feedback-pipeline"]
-    SKILLS --> NET["Network / infra<br/>ai-native-mihomo"]
+    SKILLS --> NET["Network / infra<br/>ai-native-mihomo · ai-native-proof-ledger"]
     SKILLS -.-> SITE["lizliz.xyz/skills"]
     SKILLS -.->|"soft route"| DT["design-templates asset pack"]
 ```
@@ -19,7 +19,7 @@ graph TD
 
 **Agent skills are instruction packs for coding AIs.** Instead of re-explaining your process every session — "capture the page, check density, verify offline" — you hand the agent a skill folder and it follows the workflow, runs the scripts, and hits the same gates you would.
 
-These nine packs come from real pipelines on lizliz.xyz: they were built to get actual work done, then packaged so anyone can reuse them. A skill is just a folder — `SKILL.md` (the workflow map) plus `scripts/` and `references/` that the agent loads when it needs them.
+These packs come from real pipelines on lizliz.xyz: they were built to get actual work done, then packaged so anyone can reuse them. (One exception: **AI-Native Proof Ledger** is a researched reference skill, built from dated primary sources rather than a production pipeline.) A skill is just a folder — `SKILL.md` (the workflow map) plus `scripts/` and `references/` that the agent loads when it needs them.
 
 ## The Packs
 
@@ -46,6 +46,7 @@ These nine packs come from real pipelines on lizliz.xyz: they were built to get 
 - **Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [feedback-pipeline/](skills/feedback-pipeline/)
 - **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
 - **AI-Native Mihomo** — Headless mihomo (Clash Meta) core + REST API as the agent control surface — self-heal, proxy doctrine, TUN debug playbook, runbook · [ai-native-mihomo/](skills/ai-native-mihomo/)
+- **AI-Native Proof Ledger** — Tamper-evident, independently verifiable history for SaaS and agents — mechanism ladder L0–L5, witnessed checkpoints, anchoring, claim rubric · [ai-native-proof-ledger/](skills/ai-native-proof-ledger/)
 
 ## Key Features
 

@@ -1,0 +1,68 @@
+{
+  "skill_name": "ai-native-proof-ledger",
+  "version": 1,
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A B2B SaaS wants customers to independently verify that project history was not altered. Marketing asked for 'immutable blockchain storage'. Design the trust layer.",
+      "expected_output": [
+        "Runs the threat-model gate: adversary model, who verifies without trusting the operator, which properties are promised",
+        "Recommends L1-L4 ladder (hash chain + Merkle batches + signed checkpoints, published/witnessed, optional anchoring) not a new blockchain",
+        "States the app DB stays source of truth; proof layer is an append-only replaceable projection",
+        "Rejects 'immutable/tamper-proof' wording; proposes tamper-evident with named verifiers",
+        "Flags PII rules: payloads stay off-chain; hashes of personal data are still personal data (EDPB 02/2025)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Is SHA-256 chaining in our Postgres audit table enough to claim 'tamper-evident and independently verifiable'?",
+      "expected_output": [
+        "No: a hash chain alone is L1 and is defeated by whole-history recomputation by a DB admin",
+        "Independent verifiability requires self-contained proof artifacts plus checkpoints published or witnessed outside the operator's write path (L2/L3)",
+        "Distinguishes event integrity/order (chain) from authorship (signatures) and existence time (external anchor)",
+        "Uses the claim rubric: 'tamper-evident' maybe with L2; 'independently verifiable' only with L3+ artifacts a third party can check"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Should we anchor every user event to Ethereum to make our audit trail trustworthy? What about a consortium chain with three nodes we run ourselves?",
+      "expected_output": [
+        "Per-event anchoring rejected: anchor batch checkpoints instead; per-event onchain writes add cost/latency/PII-permanence without new guarantees",
+        "Names what anchoring actually buys: existence time only; not truthfulness or confidentiality",
+        "Self-run 3-node consortium rejected as L5 theater: one owner with three nodes; real L5 needs 3+ independent orgs with independent admin domains and joint governance",
+        "Offers OTS (free, ~60 min typical) or RFC 3161 TSA as cheaper existence-time options via a swappable AnchorAdapter"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Audit our implementation: events carry actor.name, the chain is stored in the same table with an UPDATE trigger for corrections, checkpoints are signed with a key in an env var, and the site says 'tamper-proof immutable ledger'.",
+      "expected_output": [
+        "Findings: PII risk in actor data; corrections must be append-only supersession events not UPDATEs (breaks I3 and hash chain)",
+        "Signing key in env var is a compromised-signer failure: require KMS/HSM with policy; document rotation + compromise-window runbook",
+        "'tamper-proof immutable' is a claim-rubric violation (P1): replace with tamper-evident + named verification path",
+        "Checks for missing witness/publication (non-equivocation) and offline verifier (bundle must verify without the operator's DB)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Our AI coding agent performs account changes. Management wants 'proof of work performed' on the ledger and suggests mining-style proof-of-work for agent actions.",
+      "expected_output": [
+        "Refuses mining PoW confusion; 'proof of work performed' = signed receipts of recorded agent actions, not computation proofs",
+        "Agents are actors with their own KMS-held keys; they request signatures, never hold raw keys",
+        "Irreversible actions require a human-approval event referenced by the agent event (AP2-style open/closed mandate shape)",
+        "Records tool-call provenance (tool, input/output digests, model/artifact version by digest) in event attrs",
+        "States truthfulness stays out of scope: ledger shows what was recorded, not that work was correct"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We picked AWS QLDB for our audit ledger last year. What is the current advice?",
+      "expected_output": [
+        "QLDB reached end of support 2025-07-31 (official AWS notice); do not start there; plan migration per AWS guidance (Aurora PostgreSQL path)",
+        "Rebuild proofs app-level (generic schema in implementation-patterns.md) rather than adopting another single-vendor ledger DB",
+        "Notes Azure Managed CCF deprecation (2025-07-31 docs) as evidence managed-ledger churn; design proof layer provider-swappable (I8)",
+        "Keeps checkpoints as self-contained artifacts so exports verify independently of the old service"
+      ]
+    }
+  ]
+}
