@@ -1,5 +1,13 @@
 # CHANGES — webgl-threejs-background-animation
 
+## 2026-08-30 — drafting-resolve pattern reference
+
+- Added `references/attention-driven-drafting-resolve.md`: three-source survey
+  (shelfplan origin / lizliz.xyz HeroCanvas / dieline-generator time-driven
+  variant) + the inquiry-foundry `FoundryDraftingCanvas` adaptation contract
+  (panel-scale progress gains, V3 palette mapping, hero-slot integration,
+  rAF numbers).
+
 ## 2026-08 upgrade
 
 - **Scope expansion**: landing backgrounds → Three.js WebGL animation craft (decorative backgrounds **and** in-game motion)
