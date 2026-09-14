@@ -18,13 +18,19 @@ renamed GUI core).
 
 ## 2. Acquire a profile
 
-Any full Clash/mihomo yaml works: airport export page ("Clash subscription
-download"), an existing `config.yaml`, or a subscription URL (then use
-`proxy-providers` instead of inline `proxies`). The profile supplies nodes,
-groups, rules, DNS — you supply the patches.
+An airport export ("Clash subscription download"), an existing `config.yaml`,
+or a subscription URL (then use `proxy-providers` instead of inline
+`proxies`). The profile supplies nodes, groups, rules, DNS — you supply the
+patches.
 
-**Done when**: the file parses as YAML and contains `proxies` + `rules`
-(or `proxy-providers`).
+"Any full yaml works" is too strong: what matters is that it actually carries
+nodes. Identify the shape first (SKILL.md § Ingesting a new profile) — a
+provider-only export, a JSON blob and an HTML login page all parse as
+*something*, and none of them is a drop-in config.
+
+**Done when**: the file parses and yields a non-empty node list through one of
+the known shapes (`proxies` / `proxy-providers` / top-level proxy array) — and
+you can say which shape it was.
 
 ## 3. Patch security + append TUN
 
@@ -115,6 +121,67 @@ binding). Retry once before digging: auto-select health-checks cause transient
 
 **Done when**: the decisive test for each layer passes in order.
 
+## 10. Ingest a new profile (staged, never in-place)
+
+Ongoing operation, not a build step. The default is **extract nodes and merge
+into the existing known-good shell** — never adopt the incoming file wholesale.
+
+1. Identify the shape (SKILL.md table): full config / provider mapping / proxy
+   list / subscription URL / reject.
+2. Timestamp a backup of the working config *before* touching anything:
+   `cp config.yaml config.yaml.bak-$(date +%Y%m%d-%H%M%S)`.
+3. Extract nodes. **Keep local `dns:` / `tun:` / `rules:` /
+   `external-controller` / `secret` exactly as they are** — a subscription
+   must not get to rewrite security or policy.
+4. Merge deterministically: same name + same definition dedupes; same name +
+   different definition renames (`<name> (2)`) or is rejected with the conflict
+   listed. Never silently overwrite.
+5. Write a **candidate** file, not the live one.
+
+**Done when**: you hold a candidate config plus a one-line statement of what
+changed (node count, regions, renamed conflicts, anything excluded), and the
+previous config still exists as a timestamped backup.
+
+## 11. Verify policy routing (TUN) before believing it works
+
+`auto-route` does **not** install a default route in the main table, so
+checking `ip route` alone yields the false conclusion "TUN never took over":
+
+```bash
+ip rule show                  # expect a rule pointing at a dedicated table (this machine: 2022)
+ip route show table 2022      # expect `default via <tun-ip> dev Meta`
+ip link show Meta             # device up
+curl -s -o /dev/null -w '%{http_code}' https://www.gstatic.com/generate_204   # NO -x → expect 204
+```
+
+When reading `ss`/logs for port `5353`, check *which* socket: mihomo's own DNS
+listener versus the mDNS multicast address `224.0.0.251:5353`. Seeing both is
+normal — a bare port grep is not evidence of a conflict. Same for
+`configure tun interface: device or resource busy` on a **hot reload**: that is
+usually the previous TUN not yet released, so re-check after a clean restart
+before calling it a real failure.
+
+**Done when**: the rule exists, the dedicated table holds the default via the
+TUN device, and an un-proxied curl returns 204.
+
+## 12. Failover acceptance test
+
+This proves the automation, not your typing. Run it once per exit-selection
+change.
+
+1. Back up first, and write the blast radius down: "this machine loses internet
+   until the selector acts; worst case is one timer interval".
+2. Make the current exit fail (e.g. point the in-use node at a black-hole
+   address in a *candidate* config) and apply it.
+3. **Touch nothing.** Watch `/proxies` `now` plus an un-proxied `curl` on a
+   loop until the exit moves on its own.
+4. Restore the good config and confirm the exit comes back.
+
+**Done when**: the exit moved with no human action and the logs show the
+decision line (`SWITCH ... — <reason>`). For the recovery half, state whether
+the cooldown expired naturally or you cleared the state file — a cleared
+cooldown is a bypassed mechanism, not a natural recovery.
+
 ## Gotchas that bite regardless of machine
 
 - **`pkill -f` self-match**: a `pkill -f <pattern>` whose pattern appears in
@@ -123,5 +190,11 @@ binding). Retry once before digging: auto-select health-checks cause transient
 - **Mirror resets mid-stream**: pair every mirror fetch with `curl -C -` and a
   retry loop; two failures → human-phone relay.
 - **Subscription refresh**: inline-profile workflows get updates by replacing
-  the file + `PUT /configs?force=true`; `proxy-provider` workflows by
+  the file + `PUT /configs?force=true` **with a JSON body naming the absolute
+  path** (`-d '{"path":"/abs/path/config.yaml"}'` — an empty body returns
+  `400 Body invalid`); `proxy-provider` workflows by
   `PUT /providers/proxies/<name>`.
+- **A file that passes `mihomo -t` is not a loaded config.** Validate the
+  candidate on disk, then reload, then confirm through the running core
+  (`/proxies` group membership plus a real 204). "The file is correct" and "the
+  core is serving it" are different claims.
