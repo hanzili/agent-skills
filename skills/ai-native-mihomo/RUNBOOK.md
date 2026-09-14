@@ -26,11 +26,14 @@ patches.
 "Any full yaml works" is too strong: what matters is that it actually carries
 nodes. Identify the shape first (SKILL.md § Ingesting a new profile) — a
 provider-only export, a JSON blob and an HTML login page all parse as
-*something*, and none of them is a drop-in config.
+*something*, and none of them is a drop-in config. Note the trap:
+a `proxy-providers:`-only file yields **zero** inline nodes until each provider
+(`url:` / `path:`) is resolved — "take the nodes" does not apply to it
+directly.
 
 **Done when**: the file parses and yields a non-empty node list through one of
-the known shapes (`proxies` / `proxy-providers` / top-level proxy array) — and
-you can say which shape it was.
+the known shapes (inline `proxies` / resolved `proxy-providers` / top-level
+proxy array) — and you can say which shape it was.
 
 ## 3. Patch security + append TUN
 
@@ -126,21 +129,57 @@ binding). Retry once before digging: auto-select health-checks cause transient
 Ongoing operation, not a build step. The default is **extract nodes and merge
 into the existing known-good shell** — never adopt the incoming file wholesale.
 
-1. Identify the shape (SKILL.md table): full config / provider mapping / proxy
-   list / subscription URL / reject.
+1. Identify the shape (SKILL.md table): full config / provider-only /
+   proxy list / subscription URL / reject. Provider-only has two modes:
+   **preserve** (`proxy-providers:` + groups with `use:`/filters, stays
+   renewable) or **materialize** (inline snapshot for strict merging) —
+   never silently flatten a renewable provider into a stale snapshot.
 2. Timestamp a backup of the working config *before* touching anything:
    `cp config.yaml config.yaml.bak-$(date +%Y%m%d-%H%M%S)`.
+   All writes under `umask 077`; dirs `0700`, files `0600`; candidates,
+   sources and backups are credential-bearing — git-ignored and never
+   world-readable.
 3. Extract nodes. **Keep local `dns:` / `tun:` / `rules:` /
    `external-controller` / `secret` exactly as they are** — a subscription
    must not get to rewrite security or policy.
-4. Merge deterministically: same name + same definition dedupes; same name +
-   different definition renames (`<name> (2)`) or is rejected with the conflict
-   listed. Never silently overwrite.
-5. Write a **candidate** file, not the live one.
+4. Merge deterministically: classify every node via the policy alias table,
+   report per-region **plus unclassified** counts, and hold unclassified
+   nodes out of active groups. Same name + same definition dedupes; same
+   name + different definition renames (`<name> (2)`, region prefix kept)
+   or is rejected with the conflict listed. Never silently overwrite.
+   Sort stably, hash inputs, skip the write if unchanged.
+5. Write a **candidate** file next to the live config (same dir, so the
+   `PUT /configs` path stays inside the core's `-d` / `SAFE_PATHS`).
+6. Validate in a **private isolated snapshot**, not `mktemp -d` alone: copy
+   or symlink every local dependency the candidate references (Geo `.dat`,
+   `rule-providers`, `proxy-provider` path files, certs, other relative
+   assets), then `mihomo -t -f <candidate> -d <snapshot>`. If the snapshot
+   cannot be assembled completely, either validate in the real data dir
+   while explicitly accepting and reporting the `cache.db` contention, or
+   stop and ask rather than claim isolation — prefer stopping for
+   high-risk changes. Reject on any error or a zero-node result.
+7. Atomic promote: backup already retained (step 2); write temp on the
+   **same filesystem** + `rename` over the live file (`fsync` optional).
+   Then reload by workflow — inline proxies: `PUT /configs?force=true`
+   **with a JSON body naming the absolute path**
+   (`-d '{"path":"/abs/path/config.yaml"}'` — an empty body returns
+   `400 Body invalid`); `proxy-provider` setups:
+   `PUT /providers/proxies/<name>` with **no** full reload.
+8. Runtime post-check through the running core (a file that passes `mihomo -t`
+   is not a loaded config): `/proxies` shows the new nodes, a real 204 flows,
+   and — if TUN is enabled — the TUN device is still up. On a
+   `device or resource busy` line after a hot reload, preserve/rollback
+   first where possible; a clean `systemctl --user restart mihomo` is a
+   disruptive fallback — announce it per blast radius before restarting,
+   then re-check before calling it a failure.
+9. Rollback on any failed check: copy the timestamped backup back, reload the
+   same way, re-verify. Never leave a failed candidate live.
 
-**Done when**: you hold a candidate config plus a one-line statement of what
-changed (node count, regions, renamed conflicts, anything excluded), and the
-previous config still exists as a timestamped backup.
+**Done when**: change summary held (node count, per-region + unclassified
+counts, renamed conflicts, exclusions), timestamped backup exists, the
+running core serves the new nodes (204), and the rollback command plus its
+precondition (backup path, reload method) is verified — a healthy production
+activation is **not** rolled back just to prove it.
 
 ## 11. Verify policy routing (TUN) before believing it works
 
@@ -189,11 +228,14 @@ cooldown is a bypassed mechanism, not a natural recovery.
 - **Caps evaporate on binary replacement**: update = re-run setcap.
 - **Mirror resets mid-stream**: pair every mirror fetch with `curl -C -` and a
   retry loop; two failures → human-phone relay.
-- **Subscription refresh**: inline-profile workflows get updates by replacing
-  the file + `PUT /configs?force=true` **with a JSON body naming the absolute
-  path** (`-d '{"path":"/abs/path/config.yaml"}'` — an empty body returns
-  `400 Body invalid`); `proxy-provider` workflows by
-  `PUT /providers/proxies/<name>`.
+- **Subscription refresh vs config replacement are different operations**:
+  inline-profile workflows replace the file + `PUT /configs?force=true`
+  **with a JSON body naming the absolute path**
+  (`-d '{"path":"/abs/path/config.yaml"}'` — an empty body returns
+  `400 Body invalid`, and a path outside the core's `-d` dir needs
+  `SAFE_PATHS`); `proxy-provider` workflows only
+  `PUT /providers/proxies/<name>` with no full reload. After either, confirm
+  through the running core (`/proxies` + a real 204), not just `mihomo -t`.
 - **A file that passes `mihomo -t` is not a loaded config.** Validate the
   candidate on disk, then reload, then confirm through the running core
   (`/proxies` group membership plus a real 204). "The file is correct" and "the

@@ -1,15 +1,18 @@
 ---
 name: ai-native-mihomo
 description: >-
-  Use when setting up, migrating, or troubleshooting a mihomo (Clash Meta) proxy
-  stack in an AI-native way on Linux: headless core + REST API as the agent
-  control surface, rootless systemd + TUN via setcap, agent self-heal of network
-  failures, or deciding GUI-wrapper vs headless. Also covers the CN-network
-  download doctrine (mirrors, human-phone relay) and API-driven proxy control
-  (switch nodes, health checks, reload, subscriptions), region-priority exit
-  selection, and safely ingesting a new profile. Not for picking
-  airports/subscriptions (human business) or WireGuard-lane VPNs.
-version: 1.1.0
+  Use when setting up, migrating, or troubleshooting a headless Clash-family
+  proxy stack (mihomo / Clash Meta core) on Linux in an AI-native way:
+  headless core + REST API (external-controller) as the agent control surface,
+  rootless systemd + TUN system-wide transparent proxy via setcap, agent
+  self-heal of network failures, or deciding GUI-wrapper (FlClash, Clash
+  Verge Rev) vs headless. Also covers the CN-network download doctrine
+  (mirrors, human-phone relay) and API-driven proxy control (switch nodes,
+  health checks, reload, subscriptions), region-priority exit selection, and
+  safely ingesting a new profile. Matches "Clash proxy / TUN proxy / 梯子 /
+  机场落地" intents. Not for picking airports/subscriptions (human business)
+  or WireGuard-lane VPNs (this stack is proxying, not a VPN).
+version: 1.2.0
 author: Liz (lizliz.xyz)
 license: MIT
 ---
@@ -43,10 +46,12 @@ Properties that matter:
 The default answer to "mihomo keeps picking the wrong exit" is a **config
 change**, not a program. Escalate only as far as the problem forces you:
 
-1. **Native config**: a `select` group you pin by API; `url-test` for "fastest
-   wins"; `fallback` for "first that answers"; `load-balance` for spread. Most
-   "wrong node" complaints are a group type that cannot express the rule you
-   actually want.
+1. **Native config**: a `select` group you pin by API; `url-test` nominally
+   "fastest wins"; `fallback` nominally "first healthy in list order";
+   `load-balance` for spread. These are *intended* semantics, not guarantees
+   — actual failover behaviour is version- and nesting-dependent (see Group
+   behaviour). Most "wrong node" complaints are a group type that cannot
+   express the rule you actually want.
 2. **Minimal selector** (a ~100-line loop + `systemd` timer): **only** when the
    requirement is a *strict region hierarchy* — an ordered priority between
    regions that no native group type expresses. That is the entire reason the
@@ -115,7 +120,13 @@ curl -s -X PATCH "$API/configs" -d '{"mode":"rule|global|direct"}'
 curl -s -X PUT "$API/configs?force=true" \
   -H 'Content-Type: application/json' \
   -d '{"path":"/absolute/path/to/config.yaml"}'   # reload config from disk
-# an EMPTY body returns 400 Body invalid — the absolute path is required
+# an EMPTY body returns 400 Body invalid — the absolute path is required.
+# Path must be inside the core's `-d` dir, else set SAFE_PATHS (colon-separated)
+# or keep the candidate in the data dir.
+# Clear a stuck auto-group selection (store-selected restoring a dead node):
+curl -s -X DELETE "$API/proxies/$GROUP"           # Selector type excluded
+# NOTE: GET /group/<name>/delay tests EVERY member and clears the auto-group's
+# fixed selection — never use it as a health probe inside a selector loop.
 curl -s -X PUT "$API/providers/proxies/$NAME"     # refresh a subscription provider
 curl -s "$API/connections" | jq '.connections | length'   # null = inbound dead
 curl -s -X POST "$API/restart"
@@ -135,9 +146,17 @@ Two independent dimensions, constantly confused:
 
 `url-test` only sees the second. If the user says "prefer overseas, fall back
 home", that is priority, and a pure `url-test` will happily pin a 55 ms local
-node forever. Keep priority in **one** place (a policy file, or the config's
-group order + a comment) and make any selector read *that* — a second
-hard-coded copy always drifts.
+node forever. Keep priority in **one** place and make any selector read *that*
+— a second hard-coded copy always drifts. Concretely: one small policy file
+next to the config (e.g. `policy.yaml` with an ordered `regions:` list plus an
+optional `cheap_suffix:` pattern), loaded at runtime; if no policy file exists
+yet, the config's group order + a comment is the SOT until one is created.
+Never split the order across script constants *and* docs. The SOT also owns
+one editable **alias/classification table** (Chinese/English names, flags,
+abbreviations → region): subscriptions vary and some nodes carry no marker.
+Classify every imported node exactly once, report per-region **plus
+unclassified** counts, and hold unclassified nodes out of active groups until
+policy places them — never silently dump unknowns into “其他” or the backstop.
 
 Within a region the same logic recurs one level down:
 
@@ -161,13 +180,19 @@ re-verify with the API before relying on it**, not as permanent truth:
   and the chain black-holes. Reproduced: a deliberately-dead `url-test` group
   reported `alive=true`, and its parent `fallback` stayed pinned to it.
   **Consequence: never nest a `url-test` group inside `fallback`.**
-- **A flat `fallback` of real leaf nodes did *not* switch** in the same
-  environment, even with the current selection dead and its members correctly
-  marked `alive: false`. So "it's a `fallback`, it will self-heal" is **not** a
-  safe claim.
+- **A flat `fallback` of real leaf nodes did *not* switch** in one
+  environment on v1.19.30, even with the current selection dead and its
+  members correctly marked `alive: false`. Single-environment observation, not
+  a universal claim — but enough that "it's a `fallback`, it will self-heal"
+  is **not** a safe promise.
 - **`profile.store-selected: true` persists the chosen node — including a dead
   one — across reloads and restarts.** A reload can look like it "restored the
-  broken node for no reason". Clear the selection or switch explicitly.
+  broken node for no reason". Clear with `DELETE /proxies/<group>` (works for
+  every group type except `Selector`) or switch explicitly.
+- **`GET /group/<name>/delay` clears the auto-group's fixed selection** (per
+  API docs) while testing every member — so probing with it *resets* the very
+  selection you are trying to observe. Probe single nodes with
+  `GET /proxies/<name>/delay` instead.
 
 **The honest reading**: how a group reacts to losing all members is
 version- and nesting-dependent. Before promising self-healing, reproduce it —
@@ -179,8 +204,10 @@ whether `now` actually moves. Do not infer behaviour from the group's name.
 If a strict region hierarchy forces a loop (see Complexity doctrine), this is
 the whole contract. Roughly 100 lines; do not build a framework around it.
 
-**Read**: one `GET /proxies` per run. A node is healthy when `alive == true`
-**and** `history[-1].delay` is in range **and** `history[-1].time` is fresh
+**Read**: one `GET /proxies` per run — never `GET /group/<g>/delay` in the
+loop (it re-tests every member *and* clears the selection). A node is healthy
+when `alive == true` **and** `history[-1].delay` is in range **and**
+`history[-1].time` is fresh
 (RFC3339, may carry nanoseconds — truncate to microseconds before parsing). A
 node removed from every `url-test` group keeps `alive: true` with frozen
 history, so **delay alone will treat a corpse as healthy**; the timestamp is
@@ -193,9 +220,19 @@ the part that catches it. Treat ~2–3× the health interval as "fresh".
    current exit healthy and freeze you there.
 2. Candidates: sort by `(region rank, cost tier)` and take the first healthy
    one.
-3. If **all** records are missing (fresh boot), probe in priority order until
-   the first hit. **Do not cap the list** (a `[:6]` slice silently excludes
-   exactly the backstop regions you need).
+3. No-data / fresh-boot fallback is a **recovery-first ladder**, not an
+   exhaustive scan: probe current first; if dead or no data, probe **one
+   best cheap candidate per region in priority order** — so every region
+   including the backstop is reachable within `regions × timeout`, not
+   `nodes × timeout`. If all representatives fail, a second round-robin /
+   broadened sweep over the remaining candidates runs under the same
+   wall-clock budget, so a healthy second node in an already-tried region
+   is not missed. After connectivity returns, later runs (plus mihomo's
+   own health data) upgrade to a higher-priority/cheaper node; do not
+   duplicate probes within one run. No fixed global cap (a `[:6]` slice silently
+   excludes exactly the backstop you need) and no duplicate full scans.
+   Bound the run with a wall-clock budget and the service's
+   `TimeoutStartSec`; `OnUnitInactiveSec` + lock prevents overlap.
 4. Current dead → switch now. Higher priority / cheaper tier recovered → switch
    after cooldown. Same region + same tier → hold.
 
@@ -203,12 +240,18 @@ the part that catches it. Treat ~2–3× the health interval as "fresh".
 Persist `last_switch` with an **atomic write** (`tmp` + `os.replace`) so a crash
 mid-write cannot corrupt state.
 
-**Run**: once shortly after the core starts (a few seconds' delay via
-`ExecStartPost` or a short timer), then on a periodic timer (~60 s). Emit one
-line per run in a fixed shape — `OK <current>`,
+**Run**: a `systemd --user` timer, first run a few seconds after boot
+(`OnActiveSec=15s`), then `OnUnitInactiveSec=60s` (not `OnCalendar` — the next
+run starts 60 s *after the previous finished*, so a slow boot-scan can never
+pile up). Guard with a lock file; a second instance exits quietly. Prefer one
+explicit timer unit over `ExecStartPost` hooks: a post hook that sleeps or
+does network work blocks service readiness (and its failure can mark the
+service failed); a hook that merely schedules an async transient timer
+returns fast but adds transient-unit lifecycle/observability complexity. If a
+hook is used at all, prefix with `-` and keep it trivial.
+Emit one line per run in a fixed shape — `OK <current>`,
 `HOLD <current> — <reason>`, `SWITCH <from> -> <to>`, `ERROR <why>` — so
-`journalctl` is readable at a glance. Guard against concurrent runs with a
-lock file; a second instance should exit quietly, not fight the first.
+`journalctl` is readable at a glance.
 
 ## Ingesting a new profile (yaml / json / subscription)
 
@@ -217,11 +260,17 @@ policy.
 
 | Shape | How to tell | Action |
 |---|---|---|
-| full config | mapping with `proxies` **and** `rules`/`dns`/`tun` | **extract `proxies` only** |
-| provider mapping | mapping with `proxies` (maybe `proxy-groups`) | take the nodes |
+| full config | mapping with inline `proxies` (plus `rules`/`dns`/`tun`) | **extract `proxies` only** |
+| provider-only | mapping with `proxy-providers:` and **no** inline `proxies` | two legitimate modes — (a) **preserve**: keep the `proxy-providers:` blocks for ongoing native refresh and build groups with `use:`/provider filters where suitable; (b) **materialize**: resolve provider content into an inline snapshot when strict merging/selector membership requires it. Tradeoff: (a) stays renewable, (b) goes stale. Never silently flatten a renewable provider into a stale snapshot; unresolvable → **reject**. A provider update (`PUT /providers/proxies/<name>`) is not a full config replacement |
 | proxy list | top-level array of objects with `name` | take the nodes |
-| subscription URL | a URL, not a file | fetch it, then re-identify |
+| subscription URL | a URL, not a file | fetch it, then re-identify (see response checklist below) |
 | anything else | no usable `proxies` key, HTML/login page, scalar | **reject loudly** |
+
+Subscription responses: check the first non-whitespace bytes before parsing —
+`<` (HTML/login/expired page) → reject; if it is not YAML, try one base64
+decode and re-identify, else reject; YAML that parses but yields zero nodes, or
+a truncated download (size mismatch / parse error) → reject, never promote an
+empty list.
 
 Rules that matter:
 
@@ -240,7 +289,17 @@ Rules that matter:
 - **Name collisions must not silently overwrite.** Same name + same definition
   → dedupe, so re-running is idempotent and nodes never accumulate. Same name +
   different definition → rename with a stable, region-prefix-preserving suffix
-  (`<name> (2)`) and record the conflict, or reject listing the conflict.
+  (`<name> (2)`, keeping the region prefix so classification still matches)
+  and record the conflict, or reject listing the conflict. Sort
+  merged output stably (e.g. by name), hash inputs, and skip the write when the
+  result is unchanged — re-running the same input must be a no-op. Full
+  staged procedure (candidate → validate → atomic promote → reload →
+  post-check → rollback): RUNBOOK §10.
+- **Candidates, sources and backups hold live credentials.** Private dir
+  (`0700`), files `0600`, `umask 077` for every write; clean up temp files on
+  success *and* failure; strict git-ignore — and still treat local git as
+  accidentally pushable. Adjacent-to-live candidate (for `SAFE_PATHS`) is
+  fine, but never world-readable.
 - **Filtering airport "info" pseudo-nodes** (an entry named like a website or a
   traffic counter) is a judgement call: keep it as an **editable list of
   patterns with evidence**, not a heuristic buried in code. Exclude, and log
@@ -356,6 +415,10 @@ Cheap to ask, expensive to skip. Run them over any proxy change:
   `journalctl -u mihomo`, `/proxies` and `/connections`, plus a small structured
   state file (last success, input hashes, node/region counts, last error) —
   credential-free, and with the last known-good config one command away.
+- **Auditable / recoverable / secure** — log input hashes + node counts per
+  run; every promotion keeps a timestamped backup with a one-command rollback;
+  never paste secrets (secret, UUIDs, keys, hostnames, exit IPs) into docs or
+  logs.
 
 ## Verification & reporting discipline
 
