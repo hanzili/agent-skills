@@ -32,7 +32,7 @@ These packs come from real pipelines on lizliz.xyz: they were built to get actua
   <img src="https://lizliz.xyz/assets/icons/skills/webgl-threejs-background-animation.svg" width="48" alt="WebGL Three.js Background Animation" />
   <img src="https://lizliz.xyz/assets/icons/skills/interactive-projects-stream.svg" width="48" alt="Interactive Projects Stream" />
   <img src="https://lizliz.xyz/assets/icons/skills/seo-master.svg" width="48" alt="SEO Master" />
-  <img src="https://lizliz.xyz/assets/icons/skills/feedback-pipeline.svg" width="48" alt="Feedback Pipeline" />
+  <img src="https://lizliz.xyz/assets/icons/skills/github-telegram-feedback-pipeline.svg" width="48" alt="GitHub Telegram Feedback Pipeline" />
 </p>
 
 - **Doubao TTS** — Turn articles into spoken audio, dual-speaker podcasts, and ASR transcripts via Volcengine 豆包语音 · [doubao-tts/](skills/doubao-tts/)
@@ -43,7 +43,7 @@ These packs come from real pipelines on lizliz.xyz: they were built to get actua
 - **WebGL Three.js Background Animation** — WebGL that blends into the page — config-driven, GPU-budgeted, full lifecycle hygiene · [webgl-threejs-background-animation/](skills/webgl-threejs-background-animation/)
 - **Interactive Projects Stream** — Continuous clickable content stream — lane-track transport, accordion-style skill popups, D/H/P previews, zero deps · [interactive-projects-stream/](skills/interactive-projects-stream/)
 - **SEO Master** — Full-site SEO/GEO audit plus generative-engine citation measurement — evidence ladder, not vibes · [seo-master/](skills/seo-master/)
-- **Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [feedback-pipeline/](skills/feedback-pipeline/)
+- **GitHub Telegram Feedback Pipeline** — Same-origin CF Pages feedback → GitHub Issues and/or Telegram; quiet bilingual product sheet, not a SaaS FAB · [github-telegram-feedback-pipeline/](skills/github-telegram-feedback-pipeline/)
 - **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
 - **AI-Native Mihomo** — Headless mihomo (Clash Meta) core + REST API as the agent control surface — self-heal, proxy doctrine, TUN debug playbook, runbook · [ai-native-mihomo/](skills/ai-native-mihomo/)
 - **AI-Native Proof Ledger** — Tamper-evident, independently verifiable history for SaaS and agents — mechanism ladder L0–L5, witnessed checkpoints, anchoring, claim rubric · [ai-native-proof-ledger/](skills/ai-native-proof-ledger/)

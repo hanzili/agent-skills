@@ -1,4 +1,4 @@
-# Feedback Pipeline (GitHub + Telegram)
+# GitHub Telegram Feedback Pipeline
 
 Same-origin Cloudflare Pages feedback widget → GitHub Issues and/or Telegram, with a quiet bilingual paper/ink sheet instead of a generic “submit feedback” modal.
 
