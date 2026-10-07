@@ -47,7 +47,7 @@ These packs come from real pipelines on lizliz.xyz: they were built to get actua
 - **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
 - **AI-Native Mihomo** — Headless mihomo (Clash Meta) core + REST API as the agent control surface — self-heal, proxy doctrine, TUN debug playbook, runbook · [ai-native-mihomo/](skills/ai-native-mihomo/)
 - **AI-Native Proof Ledger** — Tamper-evident, independently verifiable history for SaaS and agents — mechanism ladder L0–L5, witnessed checkpoints, anchoring, claim rubric · [ai-native-proof-ledger/](skills/ai-native-proof-ledger/)
-- **Cloudflare Cost Guard** — Audit runaway billing risks and adapt quiet monitoring: native alerts first, hourly routine checks, evidence-based coverage and safe handoffs. Merged workflow with frequency-migration and delivery scenarios; no bundled monitoring daemon · [cloudflare-cost-guard/](skills/cloudflare-cost-guard/)
+- **Cloudflare Cost Guard** — Audit runaway billing risks and adapt quiet monitoring: native alerts first, hourly routine checks, evidence-based coverage and safe handoffs. Merged workflow with frequency-migration and delivery scenarios; no bundled monitoring daemon · [cloudflare-cost-guard/](skills/cloudflare-cost-guard/) · [cross-check report](docs/cloudflare-cost-guard-crosscheck-v0.2.0.md)
 
 ## Key Features
 
