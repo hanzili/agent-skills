@@ -7,8 +7,8 @@ description: >-
   Produces evidence-backed coverage and working monitoring within the user's authorized scope.
 license: MIT
 metadata:
-  version: "0.1.0"
-  evidence-basis: "Official documentation reviewed 2026-10-07; account capabilities require live verification"
+  version: "0.2.0"
+  evidence-basis: "Merged independent drafts; official references reviewed 2026-10-07/08; runtime coverage requires live verification"
 ---
 
 # Cloudflare Cost Guard
@@ -42,6 +42,7 @@ metadata:
 ## 1. 先读现状，再补缺口
 
 - 识别当前账号与 token 的真实读取范围，按账号和产品分别记录权限；缺权限不是零资源。
+  确认凭据失效才停整把凭据的请求；单个 API 的权限错误仅暂停该能力，保留其他已授权读取。
 - 检查已有脚本、状态文件、系统调度、原生告警和通知发送接口。修改前看工作目录、
   Git 状态、近期变更与当前工作负责人，保留并发工作。
 - 按完整分页盘点公开入口及其计费依赖：自定义域名、默认域名、preview、公开桶、
@@ -86,9 +87,16 @@ CPU 限额不能代替累计读写/调度限制；WAF 不拦内部 alarm。
 不完整采集不能写成“全部正常”。失败阈值以时间表达，并报告实际告警延迟；
 不能把 5min 配置的“连续三轮”原样搬成 1h 后静默等三小时。
 
+适配或迁移频率时读取 [monitoring.md](references/monitoring.md)：查询窗口、成功水位、
+阈值窗口、失败时限、watchdog、防重入与补跑必须一起核对。1h 调度保留最近15m查询会漏45m；
+补跑多小时累计量不能直接和1h阈值比较。有效空结果、权限失败、截断和数据过旧分别记录。
+
 状态更新与待发事件持久化；发送失败保留事件到真实成功，下一轮指标恢复不能抹掉未投递的紧急事件。
 恢复后停止生成新的紧急重复事件；已排队事件携带发生时间与当前状态，避免旧告警伪装成新事故。
 正常不通知，信息性趋势默认只进摘要；紧急成本风险、采集故障分别路由与节流。
+
+适配投递时读取 [delivery.md](references/delivery.md)。核验 sender 的真实返回契约，CLI exit0
+不能独自证明送达。周报邮件仅在用户需要时配置；复用已有渠道，Gmail/gws 均不是必装依赖。
 
 复用已有独立健康检查。单机健康检查不能发现整机离线；先找已有外部探活/跨机心跳，
 没有就明确缺口，不自动扩大为双机接管系统。离线时仍有效的投递渠道与用户通知偏好要同时满足。
@@ -101,6 +109,8 @@ CPU 限额不能代替累计读写/调度限制；WAF 不拦内部 alarm。
 使用 fixtures 与隔离的通知适配器验证：健康静默、阈值越界、连续采集失败、
 发送失败后恢复仍重试待发事件、发送成功后不重送、恢复后停止、
 权限不足/过期/空数据/历史不足，以及并发调度不重复发送。
+指令行为场景见 [scenarios.json](evals/scenarios.json)；它们不是已通过的程序测试，
+缺少源码、runner 或原始收据时不能把另一台机器的测试与投递报告当成本轮复验。
 普通测试隔离生产通知和凭据。真实投递测试明确标记“监控投递测试”，
 确认当前请求已授权该测试和该收件人后再发送，并核对接收端。
 

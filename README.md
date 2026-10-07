@@ -19,7 +19,7 @@ graph TD
 
 **Agent skills are instruction packs for coding AIs.** Instead of re-explaining your process every session — "capture the page, check density, verify offline" — you hand the agent a skill folder and it follows the workflow, runs the scripts, and hits the same gates you would.
 
-These packs come from real pipelines on lizliz.xyz: they were built to get actual work done, then packaged so anyone can reuse them. **AI-Native Proof Ledger** is a researched reference skill; **Cloudflare Cost Guard** is an initial workflow based on official documentation, awaiting operational refinement. Neither is presented as a production-validated pipeline. A skill is just a folder — `SKILL.md` (the workflow map) plus optional `scripts/` and `references/` that the agent loads when it needs them.
+These packs come from real pipelines on lizliz.xyz: they were built to get actual work done, then packaged so anyone can reuse them. **AI-Native Proof Ledger** is a researched reference skill; **Cloudflare Cost Guard** combines official documentation with reviewed operational lessons; runtime coverage and delivery still require acceptance. Neither is presented as a production-validated pipeline. A skill is just a folder — `SKILL.md` (the workflow map) plus optional `scripts/` and `references/` that the agent loads when it needs them.
 
 ## The Packs
 
@@ -47,7 +47,7 @@ These packs come from real pipelines on lizliz.xyz: they were built to get actua
 - **Clerk Auth** — Add Clerk authentication via the Clerk CLI — Windows-capable wrapper, split credential storage, Next.js matcher check · [clerk-auth/](skills/clerk-auth/)
 - **AI-Native Mihomo** — Headless mihomo (Clash Meta) core + REST API as the agent control surface — self-heal, proxy doctrine, TUN debug playbook, runbook · [ai-native-mihomo/](skills/ai-native-mihomo/)
 - **AI-Native Proof Ledger** — Tamper-evident, independently verifiable history for SaaS and agents — mechanism ladder L0–L5, witnessed checkpoints, anchoring, claim rubric · [ai-native-proof-ledger/](skills/ai-native-proof-ledger/)
-- **Cloudflare Cost Guard** — Audit runaway billing risks and adapt quiet monitoring: native alerts first, hourly routine checks, evidence-based coverage and safe handoffs. Initial workflow; no bundled monitoring daemon · [cloudflare-cost-guard/](skills/cloudflare-cost-guard/)
+- **Cloudflare Cost Guard** — Audit runaway billing risks and adapt quiet monitoring: native alerts first, hourly routine checks, evidence-based coverage and safe handoffs. Merged workflow with frequency-migration and delivery scenarios; no bundled monitoring daemon · [cloudflare-cost-guard/](skills/cloudflare-cost-guard/)
 
 ## Key Features
 
@@ -105,7 +105,7 @@ Every pack follows the same shape — **progressive disclosure**:
 | `SKILL.md` | The workflow map and rules — loaded when the skill is invoked |
 | `scripts/` | Run when a step needs computation (capture, transcribe, count, apply) |
 | `references/` | Deep notes loaded on demand: API details, cases, checklists |
-| `evals/` | Where a pack ships them: gates that prove the workflow did its job |
+| `evals/` | Where provided: behavior scenarios or executable checks; declared cases alone are not passing test evidence |
 
 The agent reads the map first and pulls in only the files the current task needs.
 

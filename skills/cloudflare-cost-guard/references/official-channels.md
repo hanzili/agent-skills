@@ -1,6 +1,8 @@
 # 官方能力与核验入口
 
-核对日期：2026-10-07。通过 EXA 检索并读取下列 Cloudflare 官方页面。
+初次核对：2026-10-07，通过 EXA 检索并读取 Cloudflare 官方页面。
+2026-10-08 融合审查重新核对 Budget、Custom Alerts、DO alarms、R2 analytics/pricing
+与 token 权限；其他条目仍为 2026-10-07 资料快照。邮件来源见 delivery.md。
 这是资料快照，不是账号开通、完整覆盖或生产送达的证据。套餐、Beta、API 与价格可能变化；
 实施时只刷新影响当前任务的条目，不重新做泛化行业调研。
 
